@@ -26,7 +26,7 @@ Python 3.8.2
 export FLASK_APP=hello.py
 flask run
 ```
-## Windows - PS
+## Windows - PowerShell
 
 ```bash
 $env:FLASK_APP = "hello.py"
