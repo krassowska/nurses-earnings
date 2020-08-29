@@ -34,13 +34,19 @@
             </ul>
         </div>
     </nav>
-
+    
     <div id="content">{% block content %}{% endblock %}</div>
-    <div id="footer">
+
+    <footer class="container">
         {% block footer %}
-        &copy; Copyright 20202 by <a href="https://github.com/krassowska">Karolina Krassowska</a>.
+        <p class="float-right">
+            <a href="#">Back to top</a>
+        </p>
+        <p>
+            &copy; Copyright 20202 by <a href="https://github.com/krassowska">Karolina Krassowska</a>.
+        </p>
         {% endblock %}
-    </div>
+    </footer>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
