@@ -3,14 +3,49 @@
 {% block head %}
     {{ super() }}
     <style type="text/css">
-        .important { color: #336699; }
+        .map { height: 500px; width: 500px;}
+        .wojewodztwo path { 
+            fill: #c8c8c8;
+            stroke: red;
+            stroke-width: 0.005
+        }
+        .wojewodztwo text {
+            font-size: 2%;
+            text-anchor: middle;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .wojewodztwo:hover text {
+            opacity: 1;
+
+        }
+        .wojewodztwo:hover path { fill: #a0c3fd }
+
     </style>
 {% endblock %}
 {% block content %}
     <h1>Zarobki w pielęgniarstwie</h1>
-    <p class="important">
-        Hello World!
+    <p>
+        <svg class="map"
+            viewBox="13.8 -55.2 10.7 6.5"
+            preserveAspectRatio="none"
+        >        
+            {% for wojewodztwo in wojewodztwa %}
+                <g class="wojewodztwo" data-name={{ wojewodztwo["properties"]["nazwa"] }}>
+                    <path
+                        d="
+                            M {{ wojewodztwo['geometry']['coordinates'][0][0][0] }},{{ -wojewodztwo['geometry']['coordinates'][0][0][1] }}
+                        {% for coordinate in wojewodztwo['geometry']['coordinates'][0][1:] %}
+                            L {{ coordinate[0] }},{{ -coordinate[1] }}
+                        {% endfor %}
+                        "
+                    />
+                    <text id="{{ wojewodztwo["properties"]["nazwa"] }}-text" x="{{ wojewodztwo["center"][0] }}" y="{{ -wojewodztwo["center"][1] }}" >{{ wojewodztwo["properties"]["nazwa"] }}</text>
+                </g>
+            {% endfor %}
+            {% for wojewodztwo in wojewodztwa %}
+                <use xlink:href="#{{ wojewodztwo["properties"]["nazwa"] }}-text"/>
+            {% endfor %}
+        </svg>
     </p>
 {% endblock %}
-
-nurses-earnings
