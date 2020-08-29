@@ -35,3 +35,6 @@ $env:FLASK_APP = "hello.py"
 $env:FLASK_ENV = "development"  # trigger reloader on file changes
 flask run
 ```
+
+# Resources
+Maps of Poland with voivodeships and counties in geojson format: https://github.com/ppatrzyk/polska-geojson

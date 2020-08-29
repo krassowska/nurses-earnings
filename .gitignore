@@ -1,6 +1,9 @@
 # My files
 notes.txt
 
+# Maps
+website/static/maps/
+
 # PyCharm
 .idea
 
