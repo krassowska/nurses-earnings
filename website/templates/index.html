@@ -1,51 +1,115 @@
+{% macro draw_path(region_coord) -%}
+    <path
+        d="
+            M {{ region_coord[0][0] }},{{ -region_coord[0][1] }}
+        {% for coordinate in region_coord[1:] %}
+            L {{ coordinate[0] }},{{ -coordinate[1] }}
+        {% endfor %}
+        "
+    />
+{%- endmacro %}
+
+{% macro repeat_labels_on_top(regions, name) -%}
+    {% for region in regions %}
+        <use xlink:href="#{{ name }}-{{ region["properties"]["id"] }}-text"/>
+    {% endfor %}
+{%- endmacro %}
+
+{% macro generate_regions(regions, name) -%}
+    {% for region in regions %}
+        <g class="{{ name }} region" data-name="{{ region["properties"]["nazwa"] }}" data-type="{{ name }}" onclick="activate(this)">
+            {% if region['geometry']['type'] == "Polygon" %}
+                {{ draw_path(region['geometry']['coordinates'][0]) }}
+            {% else %}
+                {% for subregion in region['geometry']['coordinates'] %}
+                    {{ draw_path(subregion[0]) }}
+                {% endfor %}
+            {% endif %}
+            <text id="{{ name }}-{{ region["properties"]["id"] }}-text" x="{{ region["center"][0] }}" y="{{ -region["center"][1] }}" >{{ region["properties"]["nazwa"] }}</text>
+        </g>
+    {% endfor %}
+{%- endmacro %}
+
 {% extends "base.html" %}
 {% block title %}Index{% endblock %}
 {% block head %}
     {{ super() }}
     <style type="text/css">
-        .map { height: 500px; width: 500px;}
-        .wojewodztwo path { 
+        .map { height: 800px; width: 800px;}
+        .region path { 
             fill: #c8c8c8;
             stroke: red;
             stroke-width: 0.005
         }
-        .wojewodztwo text {
+        .region text {
             font-size: 2%;
             text-anchor: middle;
+            transform: scale(10.7/6.5, 1);
             opacity: 0;
             pointer-events: none;
         }
-        .wojewodztwo:hover text {
+        .region:hover text {
             opacity: 1;
-
         }
-        .wojewodztwo:hover path { fill: #a0c3fd }
+        .region:hover path {
+            fill: #a0c3fd
+        }
+        .selected.wojewodztwo path {
+            fill: none;
+            stroke: blue;
+            stroke-width: 0.02;
+        }
+        .selected.wojewodztwo:hover path {
+            fill:none;
+        }
+        .selected.powiat path {
+            fill: blue;
+            stroke: red;
+            stroke-width: 0.02;
+        }
 
     </style>
 {% endblock %}
 {% block content %}
     <h1>Zarobki w pielęgniarstwie</h1>
-    <p>
-        <svg class="map"
-            viewBox="13.8 -55.2 10.7 6.5"
-            preserveAspectRatio="none"
-        >        
-            {% for wojewodztwo in wojewodztwa %}
-                <g class="wojewodztwo" data-name={{ wojewodztwo["properties"]["nazwa"] }}>
-                    <path
-                        d="
-                            M {{ wojewodztwo['geometry']['coordinates'][0][0][0] }},{{ -wojewodztwo['geometry']['coordinates'][0][0][1] }}
-                        {% for coordinate in wojewodztwo['geometry']['coordinates'][0][1:] %}
-                            L {{ coordinate[0] }},{{ -coordinate[1] }}
-                        {% endfor %}
-                        "
-                    />
-                    <text id="{{ wojewodztwo["properties"]["nazwa"] }}-text" x="{{ wojewodztwo["center"][0] }}" y="{{ -wojewodztwo["center"][1] }}" >{{ wojewodztwo["properties"]["nazwa"] }}</text>
-                </g>
-            {% endfor %}
-            {% for wojewodztwo in wojewodztwa %}
-                <use xlink:href="#{{ wojewodztwo["properties"]["nazwa"] }}-text"/>
-            {% endfor %}
-        </svg>
-    </p>
+    <div class="container">
+        <div class="row">
+            <div class="column-sm-6">
+                <svg class="map"
+                    viewBox="13.8 -55.2 10.7 6.5"
+                    preserveAspectRatio="none"
+                >
+                    {{ generate_regions(powiaty, 'powiat') }}     
+                    {{ generate_regions(wojewodztwa, 'wojewodztwo') }}
+                    {{ repeat_labels_on_top(wojewodztwa, 'wojewodztwo') }}
+                    {{ repeat_labels_on_top(powiaty, 'powiat') }}
+                </svg>
+            </div>
+            <div class="column-sm-6">
+                <h2 id="active_region"></h2>
+                <h3 id="active_region_type"></h3>
+            </div>
+        </div>
+    </div>
+    <script>
+        let previous_woj = null;
+        let previous_pow = null;
+
+        function activate(element) {
+            if (element.dataset.type == 'wojewodztwo') {
+                if (previous_woj) {
+                    previous_woj.classList.remove('selected');
+                }
+                previous_woj = element;
+            } else {
+                if (previous_pow) {
+                    previous_pow.classList.remove('selected');
+                }
+                previous_pow = element;
+            }
+            element.classList.add('selected');
+            document.querySelector('#active_region').textContent = element.dataset.name;
+            document.querySelector('#active_region_type').textContent = element.dataset.type;
+        }
+    </script>
 {% endblock %}
