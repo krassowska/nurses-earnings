@@ -23,12 +23,14 @@ Python 3.8.2
 # Run Flask application
 ## Ubuntu
 ```bash
+cd website
 export FLASK_APP=hello.py
 flask run
 ```
 ## Windows - PowerShell
 
 ```bash
+cd website
 $env:FLASK_APP = "hello.py"
 flask run
 ```
