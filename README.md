@@ -32,5 +32,6 @@ flask run
 ```bash
 cd website
 $env:FLASK_APP = "hello.py"
+$env:FLASK_ENV = "development"  # trigger reloader on file changes
 flask run
 ```
