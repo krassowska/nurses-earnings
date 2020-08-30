@@ -17,7 +17,16 @@
 
 {% macro generate_regions(regions, name) -%}
     {% for region in regions %}
-        <g class="{{ name }} region" data-name="{{ region["properties"]["nazwa"] }}" data-type="{{ name }}" onclick="activate(this)">
+        <g 
+            class="{{ name }} region"
+            data-name="{{ region["properties"]["nazwa"] }}"
+            data-type="{{ name }}"
+            data-west_border="{{ region["west_border"] }}"
+            data-north_border="{{ region["north_border"] }}"
+            data-width="{{ region["width"] }}"
+            data-height="{{ region["height"] }}"
+            onclick="activate(this)"
+        >
             {% if region['geometry']['type'] == "Polygon" %}
                 {{ draw_path(region['geometry']['coordinates'][0]) }}
             {% else %}
@@ -35,11 +44,14 @@
 {% block head %}
     {{ super() }}
     <style type="text/css">
-        .map { height: 800px; width: 800px;}
+        .map {
+            height: 500px;
+            width: 500px;
+        }
         .region path { 
-            fill: #c8c8c8;
+            fill: #ffefef;
             stroke: red;
-            stroke-width: 0.005
+            stroke-width: 0.005;
         }
         .region text {
             font-size: 2%;
@@ -55,17 +67,20 @@
             fill: #a0c3fd
         }
         .selected.wojewodztwo path {
-            fill: none;
-            stroke: blue;
-            stroke-width: 0.02;
+            /*stroke: blue;
+            stroke-width: 0.02;*/
+            filter: url(#inset-shadow);
+            fill-opacity: 60%;
+            fill: blue;
+            pointer-events: none;
         }
         .selected.wojewodztwo:hover path {
-            fill:none;
+            /*fill: none;*/
         }
         .selected.powiat path {
-            fill: blue;
-            stroke: red;
-            stroke-width: 0.02;
+            fill: #0000ff8f;
+            stroke: #c70000;
+            stroke-width: 0.01;
         }
 
     </style>
@@ -74,18 +89,54 @@
     <h1>Zarobki w pielęgniarstwie</h1>
     <div class="container">
         <div class="row">
-            <div class="column-sm-6">
+            <div class="column-md-6">
+                <h1 id="close_map">X Close</h1>
+                <div>
                 <svg class="map"
-                    viewBox="13.8 -55.2 10.7 6.5"
-                    preserveAspectRatio="none"
+                    viewBox="{{ poland_west_most }} {{ -poland_north_most }} {{ poland_width }} {{ poland_height }}"
                 >
-                    {{ generate_regions(powiaty, 'powiat') }}     
+                    <defs>
+                        <!-- Source: Michael Mullany https://stackoverflow.com/a/20778593 CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/) -->
+                        <filter id="inset-shadow" >
+                            <!-- dial up the opacity on the shape fill to "1" to select the full shape-->
+                            <feComponentTransfer in="SourceGraphic" result="inset-selection">
+                                <feFuncA type="discrete" tableValues="0 1 1 1 1 1"/>
+                            </feComponentTransfer>
+                
+                            <!-- dial down the opacity on the shape fill to "0" to get rid of it -->
+                            <feComponentTransfer in="SourceGraphic" result="original-no-fill">
+                                <feFuncA type="discrete" tableValues="0 0 1"/>
+                            </feComponentTransfer>
+                
+                            <!-- since you can't use the built in SourceAlpha generate your own -->
+                            <feColorMatrix type="matrix" in="original-no-fill" result="new-source-alpha" values="
+                                0 0 0 0 0
+                                0 0 0 0 0
+                                0 0 0 0 0
+                                0 0 0 1 0"
+                            />
+                            <feGaussianBlur in="new-source-alpha" result="blur" stdDeviation="0.05" />
+                            <feGaussianBlur in="new-source-alpha" result="blur2" stdDeviation="0.020" />
+                            <feGaussianBlur in="new-source-alpha" result="blur3" stdDeviation="0.025" />
+                            <feMerge result="blur">
+                                <feMergeNode in="blur" mode="normal"/>
+                                <feMergeNode in="blur2" mode="normal"/>
+                                <feMergeNode in="blur3" mode="normal"/>
+                            </feMerge>
+                            <!-- select the portion of the blur that overlaps with your shape -->
+                            <feComposite operator="in" in="inset-selection" in2="blur" result="inset-blur"/>
+                             <!-- composite the blur on top of the original with the fill removed -->
+                            <feComposite operator="over" in="original-no-fill" in2="inset-blur"/>            
+                        </filter>
+                    </defs>
+                    {{ generate_regions(powiaty|select("is_lowercase"), 'powiat') }}
+                    {{ generate_regions(powiaty|select("has_uppercase"), 'powiat') }}
                     {{ generate_regions(wojewodztwa, 'wojewodztwo') }}
                     {{ repeat_labels_on_top(wojewodztwa, 'wojewodztwo') }}
                     {{ repeat_labels_on_top(powiaty, 'powiat') }}
-                </svg>
+                </svg></div>
             </div>
-            <div class="column-sm-6">
+            <div class="column-md-6">
                 <h2 id="active_region"></h2>
                 <h3 id="active_region_type"></h3>
             </div>
@@ -108,8 +159,59 @@
                 previous_pow = element;
             }
             element.classList.add('selected');
+
             document.querySelector('#active_region').textContent = element.dataset.name;
             document.querySelector('#active_region_type').textContent = element.dataset.type;
+
+            // zoom in
+            const map = document.querySelector(".map");
+
+            let end_x = element.dataset.west_border;
+            let end_y = element.dataset.north_border;
+            let end_width = element.dataset.width;
+            let end_height = element.dataset.height;
+            
+            let x;
+            let y;
+            let width;
+            let height;
+
+            let start_viewBox = map.viewBox.baseVal;
+            let start_x = start_viewBox.x;
+            let start_y = -start_viewBox.y;
+            let start_height = start_viewBox.height;
+            let start_width = start_viewBox.width;
+
+            const epsilon = 0.001;
+
+            const shift_x = (end_x - start_x) / 10;
+            const shift_y = (end_y - start_y) / 10;
+            const shift_width = (end_width - start_width) / 10;
+            const shift_height = (end_height - start_height) / 10;
+
+            function update_viewBox() {
+                x =  start_x + shift_x;
+                y = start_y + shift_y;
+                width = start_width + shift_width;
+                height =  start_height + shift_height;
+                
+                map.setAttribute('viewBox', `${x} ${-y} ${width} ${height}`);
+                
+                if (
+                    Math.abs(x - end_x) > epsilon ||
+                    Math.abs(y - end_y) > epsilon ||
+                    Math.abs(width - end_width) > epsilon ||
+                    Math.abs(height - end_height) > epsilon
+                ) {
+                    window.requestAnimationFrame(update_viewBox)
+                }
+
+                start_x = x;
+                start_y = y;
+                start_width = width;
+                start_height = height;
+            }
+            window.requestAnimationFrame(update_viewBox)
         }
     </script>
 {% endblock %}
