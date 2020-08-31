@@ -67,22 +67,19 @@
             fill: #a0c3fd
         }
         .selected.wojewodztwo path {
-            /*stroke: blue;
-            stroke-width: 0.02;*/
             filter: url(#inset-shadow);
             fill-opacity: 60%;
             fill: blue;
             pointer-events: none;
-        }
-        .selected.wojewodztwo:hover path {
-            /*fill: none;*/
         }
         .selected.powiat path {
             fill: #0000ff8f;
             stroke: #c70000;
             stroke-width: 0.01;
         }
-
+        .show_powiats .wojewodztwo {
+            display: none;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -90,7 +87,10 @@
     <div class="container">
         <div class="row">
             <div class="column-md-6">
-                <h1 id="close_map">X Close</h1>
+                <div>
+                    <a href="#" class="zoom_out btn btn-primary btn-lg" onclick="zoom_out()" tabindex="-1" role="button">Zoom out</a>
+                    <a href="#" class="btn btn-primary btn-lg" onclick="show_powiats()" tabindex="-1" role="button">Powiaty/Województwa</a>
+                </div>
                 <div>
                 <svg class="map"
                     viewBox="{{ poland_west_most }} {{ -poland_north_most }} {{ poland_width }} {{ poland_height }}"
@@ -143,6 +143,7 @@
         </div>
     </div>
     <script>
+        const map = document.querySelector(".map");
         let previous_woj = null;
         let previous_pow = null;
 
@@ -164,13 +165,15 @@
             document.querySelector('#active_region_type').textContent = element.dataset.type;
 
             // zoom in
-            const map = document.querySelector(".map");
+            zoom_to({
+                x: element.dataset.west_border,
+                y: element.dataset.north_border,
+                width: element.dataset.width,
+                height: element.dataset.height
+            });
+        }
 
-            let end_x = element.dataset.west_border;
-            let end_y = element.dataset.north_border;
-            let end_width = element.dataset.width;
-            let end_height = element.dataset.height;
-            
+        function zoom_to(area) {
             let x;
             let y;
             let width;
@@ -184,10 +187,10 @@
 
             const epsilon = 0.001;
 
-            const shift_x = (end_x - start_x) / 10;
-            const shift_y = (end_y - start_y) / 10;
-            const shift_width = (end_width - start_width) / 10;
-            const shift_height = (end_height - start_height) / 10;
+            const shift_x = (area.x - start_x) / 10;
+            const shift_y = (area.y - start_y) / 10;
+            const shift_width = (area.width - start_width) / 10;
+            const shift_height = (area.height - start_height) / 10;
 
             function update_viewBox() {
                 x =  start_x + shift_x;
@@ -198,12 +201,12 @@
                 map.setAttribute('viewBox', `${x} ${-y} ${width} ${height}`);
                 
                 if (
-                    Math.abs(x - end_x) > epsilon ||
-                    Math.abs(y - end_y) > epsilon ||
-                    Math.abs(width - end_width) > epsilon ||
-                    Math.abs(height - end_height) > epsilon
+                    Math.abs(x - area.x) > epsilon ||
+                    Math.abs(y - area.y) > epsilon ||
+                    Math.abs(width - area.width) > epsilon ||
+                    Math.abs(height - area,height) > epsilon
                 ) {
-                    window.requestAnimationFrame(update_viewBox)
+                    window.requestAnimationFrame(update_viewBox);
                 }
 
                 start_x = x;
@@ -211,7 +214,27 @@
                 start_width = width;
                 start_height = height;
             }
-            window.requestAnimationFrame(update_viewBox)
+            window.requestAnimationFrame(update_viewBox); 
+        }
+        
+        // Zoom out
+        function zoom_out() {
+            const poland = {
+                x: {{ poland_west_most }},
+                y: {{ poland_north_most }},
+                width: {{ poland_width }},
+                height:{{ poland_height }}
+            };
+            if (previous_woj) {
+                previous_woj.classList.remove('selected');
+            }
+            previous_woj = null;
+            zoom_to(poland)
+        }
+
+        // show_powiats
+        function show_powiats() {
+            map.classList.toggle('show_powiats');
         }
     </script>
 {% endblock %}
