@@ -80,6 +80,13 @@
         .show_powiats .wojewodztwo {
             display: none;
         }
+        .powiat_selected text{
+            display: none;
+        }
+        .wojewodztwo_selected text {
+            font-size: 1%;
+        }
+
     </style>
 {% endblock %}
 {% block content %}
@@ -96,7 +103,8 @@
                     viewBox="{{ poland_west_most }} {{ -poland_north_most }} {{ poland_width }} {{ poland_height }}"
                 >
                     <defs>
-                        <!-- Source: Michael Mullany https://stackoverflow.com/a/20778593 CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/) -->
+                        <!-- Source: Michael Mullany https://stackoverflow.com/a/20778593
+                            CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/) -->
                         <filter id="inset-shadow" >
                             <!-- dial up the opacity on the shape fill to "1" to select the full shape-->
                             <feComponentTransfer in="SourceGraphic" result="inset-selection">
@@ -164,6 +172,17 @@
             document.querySelector('#active_region').textContent = element.dataset.name;
             document.querySelector('#active_region_type').textContent = element.dataset.type;
 
+            const activated_region_type = element.dataset.type;
+
+            if (activated_region_type == "powiat") {
+                map.classList.remove('wojewodztwo_selected');
+                map.classList.add('powiat_selected');
+            }
+            else if (activated_region_type == "wojewodztwo") {
+                map.classList.remove('powiat_selected');
+                map.classList.add('wojewodztwo_selected');
+            }
+
             // zoom in
             zoom_to({
                 x: element.dataset.west_border,
@@ -219,6 +238,11 @@
         
         // Zoom out
         function zoom_out() {
+
+            //if type woj: zoom to poland
+            //if type pow zoom to woj
+            
+
             const poland = {
                 x: {{ poland_west_most }},
                 y: {{ poland_north_most }},
@@ -230,6 +254,9 @@
             }
             previous_woj = null;
             zoom_to(poland)
+            
+            map.classList.remove('powiat_selected');
+            map.classList.remove('wojewodztwo_selected');
         }
 
         // show_powiats
