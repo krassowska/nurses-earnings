@@ -43,51 +43,7 @@
 {% block title %}Index{% endblock %}
 {% block head %}
     {{ super() }}
-    <style type="text/css">
-        .map {
-            height: 500px;
-            width: 500px;
-        }
-        .region path { 
-            fill: #ffefef;
-            stroke: red;
-            stroke-width: 0.005;
-        }
-        .region text {
-            font-size: 2%;
-            text-anchor: middle;
-            transform: scale(10.7/6.5, 1);
-            opacity: 0;
-            pointer-events: none;
-        }
-        .region:hover text {
-            opacity: 1;
-        }
-        .region:hover path {
-            fill: #a0c3fd
-        }
-        .selected.wojewodztwo path {
-            filter: url(#inset-shadow);
-            fill-opacity: 60%;
-            fill: blue;
-            pointer-events: none;
-        }
-        .selected.powiat path {
-            fill: #0000ff8f;
-            stroke: #c70000;
-            stroke-width: 0.01;
-        }
-        .show_powiats .wojewodztwo {
-            display: none;
-        }
-        .powiat_selected text{
-            display: none;
-        }
-        .wojewodztwo_selected text {
-            font-size: 1%;
-        }
 
-    </style>
 {% endblock %}
 {% block content %}
     <h1>Zarobki w pielęgniarstwie</h1>
@@ -147,6 +103,7 @@
             <div class="column-md-6">
                 <h2 id="active_region"></h2>
                 <h3 id="active_region_type"></h3>
+                <div>{{ powiats_data_list }}</div>
             </div>
         </div>
     </div>
@@ -241,8 +198,7 @@
 
             //if type woj: zoom to poland
             //if type pow zoom to woj
-            
-
+            addition_error()
             const poland = {
                 x: {{ poland_west_most }},
                 y: {{ poland_north_most }},
@@ -261,6 +217,7 @@
 
         // show_powiats
         function show_powiats() {
+            warning()
             map.classList.toggle('show_powiats');
         }
     </script>

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 
     {% block head %}
-    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="static/main.css" />
     <title>{% block title %}{% endblock %} - Zarobki w pielęgniarstwie</title>
     {% endblock %}
 </head>
@@ -49,6 +49,16 @@
         </p>
         {% endblock %}
     </footer>
+
+    <script>
+        function addition_error() {
+            console.error("1+1==3")
+        }
+        function warning() {
+            console.warn("Tiny human created")
+        }
+
+    </script>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

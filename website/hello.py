@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 import json
+import csv
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -71,6 +72,14 @@ def prepare_regions(file_path):
         region["height"] = height
     return regions
 
+def prepare_powiats_data(file_path):
+    with open(file_path, newline='', encoding='utf-8') as csvfile:
+        powiats_data = csv.DictReader(csvfile)
+        for row in powiats_data:
+            print(', '.join(row))
+    return powiats_data
+
+
 
 @app.route('/')
 def index():
@@ -90,6 +99,8 @@ def index():
     
     poland_width = poland_east_most - poland_west_most
     poland_height = poland_north_most - poland_south_most
+
+    powiats_data_list = prepare_powiats_data("static/maps/powiats.csv")
     
     return render_template(
         "index.html",
@@ -98,5 +109,6 @@ def index():
         poland_west_most=poland_west_most,
         poland_north_most=poland_north_most,
         poland_width=poland_width,
-        poland_height=poland_height
+        poland_height=poland_height,
+        powiats_data_list=powiats_data_list
     )

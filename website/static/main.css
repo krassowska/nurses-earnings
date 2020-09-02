@@ -1,0 +1,42 @@
+.map {
+    height: 500px;
+    width: 500px;
+}
+.region path { 
+    fill: #ffefef;
+    stroke: red;
+    stroke-width: 0.005;
+}
+.region text {
+    font-size: 2%;
+    text-anchor: middle;
+    transform: scale(10.7/6.5, 1);
+    opacity: 0;
+    pointer-events: none;
+}
+.region:hover text {
+    opacity: 1;
+}
+.region:hover path {
+    fill: #a0c3fd
+}
+.selected.wojewodztwo path {
+    filter: url(#inset-shadow);
+    fill-opacity: 60%;
+    fill: blue;
+    pointer-events: none;
+}
+.selected.powiat path {
+    fill: #0000ff8f;
+    stroke: #c70000;
+    stroke-width: 0.01;
+}
+.show_powiats .wojewodztwo {
+    display: none;
+}
+.powiat_selected text{
+    display: none;
+}
+.wojewodztwo_selected text {
+    font-size: 1%;
+}
