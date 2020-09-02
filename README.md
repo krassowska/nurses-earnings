@@ -38,4 +38,4 @@ flask run
 
 # Resources
 - Maps of Poland with voivodeships and counties in geojson format: https://github.com/ppatrzyk/polska-geojson
-- Table with information about powiats: https://pl.wikipedia.org/wiki/Lista_powiat%C3%B3w_w_Polsce#Lista_powiat%C3%B3w_w_Polsce accessed on 02/09/2020, CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/deed.pl)
+- Table with information about powiats: [Source](https://pl.wikipedia.org/wiki/Lista_powiat%C3%B3w_w_Polsce#Lista_powiat%C3%B3w_w_Polsce accessed on 02/09/2020), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/deed.pl)
