@@ -103,14 +103,16 @@
             <div class="column-md-6">
                 <h2 id="active_region"></h2>
                 <h3 id="active_region_type"></h3>
-                <div>{{ powiats_data_list }}</div>
+                <div id="active_region_data"></div>
             </div>
         </div>
     </div>
     <script>
         const map = document.querySelector(".map");
+        const powiats = {{ powiats_data | safe }};
         let previous_woj = null;
         let previous_pow = null;
+
 
         function activate(element) {
             if (element.dataset.type == 'wojewodztwo') {
@@ -126,9 +128,27 @@
             }
             element.classList.add('selected');
 
-            document.querySelector('#active_region').textContent = element.dataset.name;
-            document.querySelector('#active_region_type').textContent = element.dataset.type;
+            let active_region = element.dataset.name;
+            let active_region_type = element.dataset.type;
+            console.log(active_region);
+            
+            
 
+            document.querySelector('#active_region').textContent = active_region;
+            document.querySelector('#active_region_type').textContent = active_region_type;
+
+            if (active_region_type == "powiat") {
+                let powiat_key = active_region;
+                if (!(active_region in powiats)) {
+                powiat_key = active_region.replace("powiat ", "");
+                console.log(powiat_key);
+                }
+                powiat = powiats[powiat_key];
+                console.log(powiat);
+
+                document.querySelector('#active_region_data').textContent = powiat["Województwo"];
+            }
+            
             const activated_region_type = element.dataset.type;
 
             if (activated_region_type == "powiat") {
@@ -218,5 +238,6 @@
         function show_powiats() {
             map.classList.toggle('show_powiats');
         }
+
     </script>
 {% endblock %}

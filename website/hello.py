@@ -75,9 +75,13 @@ def prepare_regions(file_path):
 def prepare_powiats_data(file_path):
     with open(file_path, newline='', encoding='utf-8') as csvfile:
         powiats_data = csv.DictReader(csvfile)
+        powiaty = {}
         for row in powiats_data:
-            print(', '.join(row))
-    return powiats_data
+            key = row['\ufeffPowiat']
+            powiaty[key] = row
+            # print(row)
+        print(powiaty)
+    return powiaty
 
 
 
@@ -100,7 +104,8 @@ def index():
     poland_width = poland_east_most - poland_west_most
     poland_height = poland_north_most - poland_south_most
 
-    powiats_data_list = prepare_powiats_data("static/maps/powiats.csv")
+    powiats_data = json.dumps(prepare_powiats_data("static/maps/powiats.csv"))
+
     
     return render_template(
         "index.html",
@@ -110,5 +115,5 @@ def index():
         poland_north_most=poland_north_most,
         poland_width=poland_width,
         poland_height=poland_height,
-        powiats_data_list=powiats_data_list
+        powiats_data=powiats_data
     )
