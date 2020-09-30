@@ -1,3 +1,8 @@
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO public;
+
 CREATE TYPE education_level AS ENUM (
     'liceum medyczne',
     'szkola policealna',
@@ -13,13 +18,14 @@ CREATE TYPE education_level AS ENUM (
 );
 
 CREATE TABLE IF NOT EXISTS nursing_course (
-    id integer PRIMARY KEY,
+    id serial PRIMARY KEY,
     course_name text NOT NULL,
-    course_level text NOT NULL
+    course_level text NOT NULL,
+    UNIQUE (course_name, course_level)
 );
 
 CREATE TABLE IF NOT EXISTS person (
-    id INTEGER PRIMARY KEY,
+    id serial PRIMARY KEY,
     username text NOT NULL UNIQUE,
     hashed_password text NOT NULL,
     date_added timestamptz NOT NULL,
@@ -30,7 +36,7 @@ CREATE TABLE IF NOT EXISTS person (
 );
 
 CREATE TABLE IF NOT EXISTS employment (
-    id integer PRIMARY KEY,
+    id serial PRIMARY KEY,
     date_from DATE,
     date_to DATE,
     place text,
@@ -44,7 +50,7 @@ CREATE TABLE IF NOT EXISTS employment (
 );
 
 CREATE TABLE IF NOT EXISTS education (
-    id INTEGER PRIMARY KEY,
+    id serial PRIMARY KEY,
     year_course_finished INTEGER,
     nursing_course_id INTEGER REFERENCES nursing_course (id),
     person_id INTEGER REFERENCES person (id),
