@@ -3,7 +3,7 @@ CREATE SCHEMA public;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO public;
 
-CREATE TYPE education_level AS ENUM (
+CREATE TYPE education_type AS ENUM (
     'liceum medyczne',
     'szkola policealna',
     'licencjat',
@@ -19,9 +19,9 @@ CREATE TYPE education_level AS ENUM (
 
 CREATE TABLE IF NOT EXISTS nursing_course (
     id serial PRIMARY KEY,
+    course_level education_type NOT NULL,
     course_name text NOT NULL,
-    course_level text NOT NULL,
-    UNIQUE (course_name, course_level)
+    UNIQUE (course_level, course_name)
 );
 
 CREATE TABLE IF NOT EXISTS person (
