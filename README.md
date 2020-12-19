@@ -24,14 +24,14 @@ Python 3.8.2
 ## Ubuntu
 ```bash
 cd website
-export FLASK_APP=hello.py
+export FLASK_APP=app.py
 flask run
 ```
 ## Windows - PowerShell
 
 ```bash
 cd website
-$env:FLASK_APP = "hello.py"
+$env:FLASK_APP = "app.py"
 $env:FLASK_ENV = "development"  # trigger reloader on file changes
 flask run
 ```
