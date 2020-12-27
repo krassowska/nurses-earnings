@@ -140,11 +140,17 @@ def form():
     ]
 
     courses = [
-        {'id': i, 'label': course['course_name'] + ' (' + course['education_level'] + ')'}
+        {
+            'id': i, 
+            'label': course['course_name'] + ' (' + course['education_level'] + ')',
+            'group': course['education_level']
+        }
         for i, course in enumerate(courses_raw)
     ]
+    education_level = ["specjalizacja", "kurs kwalifikacyjny", "kurs specjalistyczny"]
 
     return render_template(
         "form.html",
-        courses=courses
+        courses=courses,
+        education_level=education_level
     )
