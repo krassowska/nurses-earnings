@@ -61,6 +61,7 @@ def form():
         'Pielęgniarstwo ginekologiczno-położnicze',
         'Pielęgniarstwo rodzinne'
     ]
+
     kursy_kwalifikacyjne = [
         'Pielęgniarstwo anestezjologiczne i intensywnej opieki',
         'Pielęgniarstwo chirurgiczne',
@@ -128,29 +129,21 @@ def form():
         'Opieka nad kobietą z cukrzycą w okresie okołoporodowym',
         'Szczepienia ochronne'
     ]
-    courses_raw = [
-        {'course_name': specjalizacja, 'education_level': 'specjalizacja'}
-        for specjalizacja in specjalizacje
-    ] + [
-        {'course_name': kurs_kwalifikacyjny, 'education_level': 'kurs kwalifikacyjny'}
-        for kurs_kwalifikacyjny in kursy_kwalifikacyjne
-    ] + [
-        {'course_name': kurs_specjalistyczny, 'education_level': 'kurs specjalistyczny'}
-        for kurs_specjalistyczny in kursy_specjalistyczne
-    ]
 
-    courses = [
-        {
-            'id': i, 
-            'label': course['course_name'] + ' (' + course['education_level'] + ')',
-            'group': course['education_level']
-        }
-        for i, course in enumerate(courses_raw)
-    ]
-    education_level = ["specjalizacja", "kurs kwalifikacyjny", "kurs specjalistyczny"]
+    education_levels = {"specjalizacja": specjalizacje, "kurs kwalifikacyjny": kursy_kwalifikacyjne, "kurs specjalistyczny": kursy_specjalistyczne}
+
+    courses = {
+        level: [
+            {
+                'id': level + '_' + str(i),
+                'label': course + ' (' + level + ')'
+            }   
+            for i, course in enumerate(courses_list)
+        ]
+        for level, courses_list in education_levels.items()
+    }
 
     return render_template(
         "form.html",
-        courses=courses,
-        education_level=education_level
+        courses=courses
     )

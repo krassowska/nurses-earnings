@@ -1,7 +1,7 @@
-{% macro input(id, label, type='text') %}
-<div class="form-group">
+{% macro input(id, label, type='text', class='', name='') %}
+<div class="form-group {{ class }}">
     <label for="{{ id }}">{{ label }}</label>
-    <input type="{{ type }}" class="form-control" id="{{ id }}"
+    <input type="{{ type }}" class="form-control" id="{{ id }}" name="{{ name or id }}"
         {%- for argument in kwargs -%}
             {{ ' ' }}{{ argument }}="{{ kwargs[argument] }}"
         {%- endfor -%}
@@ -9,35 +9,31 @@
 </div>
 {% endmacro %}
 
-{% macro radio_input(options, id, label) %}
+{% macro radio_input(options, label, id_prefix='', name='') %}
 <fieldset class="form-group">
     <label for="radios">{{ label }}</label>
     {% for element in options %}
     <div class="custom-control custom-radio" id="radios">
-        <input type="radio" id="{{ element['id'] }}" name="customRadio" class="custom-control-input" value="option1">
-        <label class="custom-control-label" for="{{ element['id'] }}">{{ element['label'] }}</label>
+        <input type="radio" id="{{ id_prefix + '-' + element['id'] }}" name="{{ name }}" class="custom-control-input" value="{{ element['id'] }}">
+        <label class="custom-control-label" for="{{ id_prefix + '-' + element['id'] }}">{{ element['label'] }}</label>
     </div>
     {% endfor %}
 </fieldset>
 {% endmacro %}
 
-{% macro select_input(options, id, label) %}
-<fieldset class="form-group">
-    <label for="select">{{ label }}</label>
-    <select id="select">
-        <option value="">Wybierz...</option>
-        {% for group in education_level %}
-            <optgroup label="{{ group }}">
-            {% for element in options %}
-                {% if element['group'] == group %}
-                <option value="{{ element['id'] }}">{{ element['label'] }}</option>
-                {% endif %}
-            {% endfor %}
-            </optgroup>
-        {%- endfor -%}
-        <option value="Inny">Inny</option>
-    </select>
-</fieldset>
+{% macro select_input(options, id, label, onchange="", name="") %}
+<label for="select">{{ label }}</label>
+<select id="select" onchange="{{ onchange }}" name="{{ name }}">
+    <option value="">Wybierz...</option>
+    {% for group, list in options.items() %}
+        <optgroup label="{{ group }}">
+        {% for element in list %}
+            <option value="{{ element['id'] }}">{{ element['label'] }}</option>
+        {% endfor %}
+        </optgroup>
+    {%- endfor -%}
+    <option value="Inny">Inny</option>
+</select>
 {% endmacro %}
 
 {% extends "base.html" %}
@@ -60,7 +56,7 @@
                             {"id": "Female", "label": "Kobieta"}, 
                             {"id": "Male", "label": "Mężczyzna"},
                             {"id": "Other", "label": "Inna"}
-                            ], label="Płeć") }}
+                            ], label="Płeć", id_prefix='sex', name='sex') }}
                         {{ input('year_of_birth', type='number', label='Rok urodzenia', min=1900, step=1, max=2020) }}
                         {{ input('years_of_experience', type='number', label='Liczba lat doświadczenia w zawodzie', min=0, step=0.5, max=100) }}
                     </div>
@@ -71,33 +67,64 @@
                         {{ input('date_from', type='month', label='Data rozpoczęcia pracy', min="1900-01", step="1") }}
                         {{ input('date_from', type='month', label='Data zakończenia pracy', min="1900-01", step="1") }}
                         {{ input('wage', type='number', label='Wynagrodzenie na rękę', min=0, step=0.1) }}
-                        {{ radio_input(options=[
-                            {"id": "hour", "label": "godzinę"}, 
-                            {"id": "month", "label": "miesiąc"},
-                            {"id": "year", "label": "rok"},
-                        ], label="Wynagrodzenie za:") }}
+                        {{ radio_input(
+                            options=[
+                                {"id": "hour", "label": "godzinę"}, 
+                                {"id": "month", "label": "miesiąc"},
+                                {"id": "year", "label": "rok"},
+                            ],
+                            label="Wynagrodzenie za:",
+                            id_prefix="wage",
+                            name="wage"
+                        ) }}
                         type_of_contract - list<br>
                         {{ input('hours_worked_per_week', type='number', label='Tygodniowy wymiar czasu pracy', min=0, step=0.25, max=168) }}
                     </div>
 
                     <div>
                         <h4>Ukończone kursy</h4>
-                        {{ select_input(options=courses, label="Kursy") }}
-                        <!-- if select_input(value) != "Wybierz...": 
-                            display input("year finished") -->
-                        <!-- Add next course -->
-                        {{ input('year_course_finished', type='number', label='Rok ukończenia kursu', min=1900, step=1, max=2100) }}
-                        <button type="button" class="btn btn-primary">Dodaj kurs</button>
+
+                        <div id="courses">
+                            <div class='course_data'>
+                                {{ select_input(options=courses, label="Kurs", onchange="displayYear(this)", name="course[]") }}
+                                {{ input('year_course_finished', type='number', label='Rok ukończenia kursu', name="course_year[]", class='d-none', min=1900, step=1, max=2100) }}
+                            </div>             
+                        </div>
+
+                        <button type="button" class="btn btn-primary d-none" id="add_course" onclick="addNewCourse()">+ Dodaj kurs</button>
                     </div>
                     
-
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                  </form>
+                    <div>
+                        <br>
+                        <br>                        
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
             </div>
             <div class="column-md-6">
             </div>
         </div>
     </div>
     <script>
+        function addNewCourse() {
+            let courses_div = document.querySelector('#courses')
+            let course_data_div = courses_div.lastElementChild
+            courses_div.insertBefore(course_data_div.cloneNode(true), course_data_div.nextSibling)
+        }
+        function displayYear(course_select) {
+            let year_input = course_select.nextElementSibling
+            let add_course_button = document.querySelector('#add_course')
+            let course_data_div = course_select.parentElement
+            let courses_div = course_select.parentElement.parentElement
+            if (course_select.value == '') {
+                year_input.classList.add('d-none')
+                if (courses_div.lastElementChild == course_data_div) {
+                    add_course_button.classList.add('d-none')
+                }
+            } else {
+                year_input.classList.remove('d-none')
+                add_course_button.classList.remove('d-none')
+            }
+        }
     </script>
 {% endblock %}
