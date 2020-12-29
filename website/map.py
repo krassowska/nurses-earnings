@@ -72,6 +72,4 @@ def prepare_powiats_data(file_path):
         for row in powiats_data:
             key = row['\ufeffPowiat']
             powiaty[key] = row
-            # print(row)
-        print(powiaty)
     return powiaty

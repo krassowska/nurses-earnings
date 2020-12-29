@@ -1,6 +1,6 @@
 import json
 
-from flask import render_template
+from flask import render_template, request, redirect, url_for
 
 from app import app
 from map import prepare_regions, prepare_powiats_data
@@ -41,20 +41,40 @@ def index():
     )
 
 
-@app.route('/form')
+@app.route('/form', methods=['GET', 'POST'])
 def form():
-    courses = {
+    all_courses = {
         level: [
             {
-                'id': level + '_' + str(i),
-                'label': course + ' (' + level + ')'
-            }   
+                'id': level.replace(' ', '_') + '_' + str(i),
+                'label': course + ' (' + level + ')',
+                'name': course,
+                'level': level
+            }
             for i, course in enumerate(courses_list)
         ]
         for level, courses_list in education_levels.items()
     }
 
+    course_id_to_name = {
+        course_data['id']: {'name': course_data['name'], 'level': course_data['level']}
+        for courses_on_given_level in all_courses.values()
+        for course_data in courses_on_given_level
+    }
+
+    if request.method == "POST":
+        # print(request.form)
+        user_courses = request.form.getlist('course[]')
+        course_years = request.form.getlist('course_year[]')
+        finished_courses = [
+            {'id': course_id, 'year': course_year, 'name': course_id_to_name[course_id]['name'], 'level': course_id_to_name[course_id]['level']}
+            for course_id, course_year in zip(user_courses, course_years)
+        ]
+        print(finished_courses)
+
+        return redirect(url_for('index'))
+
     return render_template(
         "form.html",
-        courses=courses
+        courses=all_courses
     )
