@@ -14,7 +14,13 @@
     <label for="radios">{{ label }}</label>
     {% for element in options %}
     <div class="custom-control custom-radio" id="radios">
-        <input type="radio" id="{{ id_prefix + '-' + element['id'] }}" name="{{ name }}" class="custom-control-input" value="{{ element['id'] }}">
+        <input
+            type="radio"
+            id="{{ id_prefix + '-' + element['id'] }}"
+            name="{{ name }}"
+            class="custom-control-input"
+            value="{{ element['id'] }}"
+        >
         <label class="custom-control-label" for="{{ id_prefix + '-' + element['id'] }}">{{ element['label'] }}</label>
     </div>
     {% endfor %}
@@ -61,7 +67,8 @@
                     </div>
                     <div>
                         <h4>Historia pracy</h4>
-                        {{ input('place', label='Miejsce pracy') }}
+                        <!--{{ input('place', label='Miejsce pracy') }}-->
+                        {{ select_input(options=wojewodztwa_dict, label="Miejsce pracy", name="place") }}
                         {{ input('position', label='Stanowisko') }}
                         {{ input('date_from', type='month', label='Data rozpoczęcia pracy', min="1910-01", step="1") }}
                         {{ input('date_to', type='month', label='Data zakończenia pracy', min="1910-01", step="1") }}
@@ -73,10 +80,20 @@
                                 {"id": "year", "label": "rok"},
                             ],
                             label="Wynagrodzenie za:",
-                            id_prefix="wage",
-                            name="wage"
+                            id_prefix="wage_per_x",
+                            name="wage_per_x"
                         ) }}
-                        type_of_contract - list<br>
+                        {{ radio_input(
+                            options=[
+                                {"id": "o_prace", "label": "Umowa o pracę"},
+                                {"id": "zlecenie", "label": "Umowa zlecenie"},
+                                {"id": "dzielo", "label": "Umowa o dzieło"},
+                                {"id": "kontrakt", "label": "Kontrakt"}
+                            ],
+                            label="Rodzaj umowy:",
+                            id_prefix="type_of_contract",
+                            name="type_of_contract"
+                        ) }}
                         {{ input('hours_worked_per_week', type='number', label='Tygodniowy wymiar czasu pracy', min=0, step=0.25, max=168) }}
                     </div>
 
@@ -86,7 +103,16 @@
                         <div id="courses">
                             <div class='course_data'>
                                 {{ select_input(options=courses, label="Kurs", onchange="displayYear(this)", name="course[]") }}
-                                {{ input('year_course_finished', type='number', label='Rok ukończenia kursu', name="course_year[]", class='d-none', min=1900, step=1, max=2100) }}
+                                {{ input(
+                                    'year_course_finished',
+                                    type='number',
+                                    label='Rok ukończenia kursu',
+                                    name="course_year[]",
+                                    class='d-none',
+                                    min=1900,
+                                    step=1,
+                                    max=2100)
+                                }}
                             </div>             
                         </div>
 

@@ -1,11 +1,15 @@
 # My files
 notes.txt
+config.py
 
 # Maps
 website/static/maps/
 
 # PyCharm
 .idea
+
+# VSCode
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
