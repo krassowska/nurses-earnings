@@ -29,7 +29,7 @@
 
 {% macro select_input(options, id, label, onchange="", name="") %}
 <label for="select">{{ label }}</label>
-<select id="select" onchange="{{ onchange }}" name="{{ name }}">
+<select class="custom-select" id="select" onchange="{{ onchange }}" name="{{ name }}">
     <option value="">Wybierz...</option>
     {% for group, list in options.items() %}
         <optgroup label="{{ group }}">
