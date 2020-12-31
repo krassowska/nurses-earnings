@@ -1,5 +1,10 @@
 # nurses-earnings
-Earnings among Polish nurses.
+Collecting and visualising data about earnings among Polish nurses.
+
+*Plans for the future:*
+- allow users to add a few working places at a time, with more details
+- allow users to modify the data they entered
+- create an interactive dashboard allowing to check wages depending on years of experience, sex, age, education, regions, workplace, etc
 
 
 # Virtual environment
