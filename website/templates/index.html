@@ -6,6 +6,7 @@
             L {{ coordinate[0] }},{{ -coordinate[1] }}
         {% endfor %}
         "
+        style="fill:rgb(203, 203, 255)"
     />
 {%- endmacro %}
 
@@ -19,8 +20,9 @@
     {% for region in regions %}
         <g 
             class="{{ name }} region"
-            data-name="{{ region["properties"]["nazwa"] }}"
+            data-name="{{ region['properties']['nazwa'] }}"
             data-type="{{ name }}"
+            data-region_wage_mean="{{ wojewodztwa_wage_mean.get(unidecode(region['properties']['nazwa'])) }}"
             data-west_border="{{ region["west_border"] }}"
             data-north_border="{{ region["north_border"] }}"
             data-width="{{ region["width"] }}"
@@ -238,6 +240,26 @@
         function show_powiats() {
             map.classList.toggle('show_powiats');
         }
+
+        let wojewodztwa = document.querySelectorAll(".wojewodztwo");
+        let i = 0;
+        let wages_list = [];
+        for (let wojewodztwo of wojewodztwa) {
+            wages_list.push(parseFloat(wojewodztwo.dataset.region_wage_mean))
+        };
+        
+        let wages_min = Math.min(...wages_list);
+        let wages_max = Math.max(...wages_list);
+        let wages_span = wages_max - wages_min;
+        console.log(wages_min, wages_max, wages_span);
+
+        for (let wojewodztwo of wojewodztwa) {
+            let wages_mean = parseFloat(wojewodztwo.dataset.region_wage_mean)
+            let wages_perc = (wages_mean - wages_min) / wages_span * 100;
+            let redness = 255 - (255 * wages_perc / 100);
+            console.log(redness)
+            wojewodztwo.firstElementChild.style.fill = `rgb(${redness},0,0)`
+        };
 
     </script>
 {% endblock %}

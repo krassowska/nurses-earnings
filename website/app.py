@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from map import test_has_uppercase, test_is_lowercase
 from sqlalchemy.ext.automap import automap_base
+from unidecode import unidecode
 
 
 app = Flask(__name__)
@@ -20,5 +21,7 @@ Education = Base.classes.education
 
 app.jinja_env.tests['has_uppercase'] = test_has_uppercase
 app.jinja_env.tests['is_lowercase'] = test_is_lowercase
+app.jinja_env.globals['unidecode'] = unidecode
+
 
 import routes

@@ -4,11 +4,12 @@ from flask import render_template, request, redirect, url_for
 
 from datetime import datetime
 from uuid import uuid4
+from unidecode import unidecode
 
 from app import app, db, Employment, NursingCourse, Person, Education
 from map import prepare_regions, prepare_powiats_data
 from courses import education_levels
-from places import wojewodztwa_dict
+from places import wojewodztwa_list, wojewodztwa_dict
 
 
 @app.route('/')
@@ -33,15 +34,30 @@ def index():
     powiats_data = json.dumps(prepare_powiats_data("static/maps/powiats.csv"))
 
     all_employment_data = Employment.query.all()
-    #print(all_employment_data)
+    #all_person_data = Person.query.all()
     employment_info = [
         {
             'wojewodztwo': employment_data.place,
             'wage': employment_data.wage
+            # 'sex': employment_data.sex
         }
         for employment_data in all_employment_data
     ]
-    print(employment_info)
+
+    wojewodztwa_wage = {}
+
+    for wojewodztwo in wojewodztwa_list:
+        wojewodztwa_wage[unidecode(wojewodztwo)] = [0, 0]
+
+    for info in employment_info:
+        wojewodztwa_wage[info['wojewodztwo']][0] += info['wage']
+        wojewodztwa_wage[info['wojewodztwo']][1] += 1
+
+    wojewodztwa_wage_mean = {
+        wojewodztwo: (wage / count)
+        for wojewodztwo, (wage, count) in wojewodztwa_wage.items()
+    }
+
 
     return render_template(
         "index.html",
@@ -51,7 +67,8 @@ def index():
         poland_north_most=poland_north_most,
         poland_width=poland_width,
         poland_height=poland_height,
-        powiats_data=powiats_data
+        powiats_data=powiats_data,
+        wojewodztwa_wage_mean=wojewodztwa_wage_mean
     )
 
 
@@ -77,7 +94,7 @@ def form():
     }
 
     if request.method == "POST":
-        print(request.form)
+        #print(request.form)
 
         # get answers from the form
         sex = request.form.get('sex')
@@ -89,23 +106,11 @@ def form():
             {'id': course_id, 'year': course_year, 'name': course_id_to_name[course_id]['name'], 'level': course_id_to_name[course_id]['level']}
             for course_id, course_year in zip(user_courses, course_years)
         ]
-        print(sex, year_of_birth, finished_courses)
+        #print(sex, year_of_birth, finished_courses)
         now = datetime.utcnow()
-        print(now)
-        print(datetime.strptime(request.form.get('date_from'), "%Y-%m"))
-        employment = Employment(
-            date_from=datetime.strptime(request.form.get('date_from'), "%Y-%m"),
-            date_to=datetime.strptime(request.form.get('date_to'), "%Y-%m"),
-            #person_id=,
-            date_entered=now,
-            date_modified=now,
-            **{
-                key: request.form.get(key)
-                for key in ['place', 'position', 'type_of_contract', 'wage', 'wage_per_x']
-            }
-        )
+        #print(datetime.strptime(request.form.get('date_from'), "%Y-%m"))
 
-        #NursingCourse, Education
+       #NursingCourse, Education
 
         person = Person(
             username=str(uuid4()),
@@ -118,7 +123,19 @@ def form():
             }
         )
 
-        db.session.add_all([employment, person])
+        employment = Employment(
+            date_from=datetime.strptime(request.form.get('date_from'), "%Y-%m"),
+            date_to=datetime.strptime(request.form.get('date_to'), "%Y-%m"),
+            person=person,
+            date_entered=now,
+            date_modified=now,
+            **{
+                key: request.form.get(key)
+                for key in ['place', 'position', 'type_of_contract', 'wage', 'wage_per_x']
+            }
+        )
+
+        db.session.add_all([person, employment])
         db.session.commit()
 
         return redirect(url_for('index'))
