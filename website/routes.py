@@ -12,6 +12,24 @@ from courses import education_levels
 from places import wojewodztwa_list, wojewodztwa_dict
 
 
+def calculate_mean(regions_list, employment_info):
+    regions_wage = {}
+
+    for region in regions_list:
+        regions_wage[unidecode(region)] = [0, 0]
+
+    for info in employment_info:
+        regions_wage[info['wojewodztwo']][0] += info['wage']
+        regions_wage[info['wojewodztwo']][1] += 1
+
+    regions_wage_mean = {
+        region: (wage / count)
+        for region, (wage, count) in regions_wage.items() if count
+    }
+    
+    return regions_wage_mean
+
+
 @app.route('/')
 def index():
     wojewodztwa = prepare_regions("static/maps/wojewodztwa-min.geojson")
@@ -33,31 +51,44 @@ def index():
 
     powiats_data = json.dumps(prepare_powiats_data("static/maps/powiats.csv"))
 
+    ''''id': person_data.id,
+            'year_of_birth': person_data.year_of_birth,
+            'sex': person_data.sex,
+            'years_of_experience': person_data.years_of_experience'''
+
+    all_person_data = Person.query.all()
+    person_info = {
+        person_data.id: person_data
+        for person_data in all_person_data
+    }
+    
     all_employment_data = Employment.query.all()
-    #all_person_data = Person.query.all()
-    employment_info = [
+    all_employment_info = [
         {
             'wojewodztwo': employment_data.place,
-            'wage': employment_data.wage
-            # 'sex': employment_data.sex
+            'wage': employment_data.wage,
+            'sex': person_info[employment_data.person_id].sex
         }
         for employment_data in all_employment_data
     ]
-
-    wojewodztwa_wage = {}
-
-    for wojewodztwo in wojewodztwa_list:
-        wojewodztwa_wage[unidecode(wojewodztwo)] = [0, 0]
-
-    for info in employment_info:
-        wojewodztwa_wage[info['wojewodztwo']][0] += info['wage']
-        wojewodztwa_wage[info['wojewodztwo']][1] += 1
-
-    wojewodztwa_wage_mean = {
-        wojewodztwo: (wage / count)
-        for wojewodztwo, (wage, count) in wojewodztwa_wage.items()
-    }
-
+        
+    wojewodztwa_wage_mean = calculate_mean(wojewodztwa_list, all_employment_info)
+    
+    # find wage for males anf females
+    wojewodztwa_female_wage_mean = calculate_mean(
+        wojewodztwa_list,
+        [
+            info
+            for info in all_employment_info if info['sex'] == 'Female'
+        ]
+    )
+    wojewodztwa_male_wage_mean = calculate_mean(
+        wojewodztwa_list,
+        [
+            info
+            for info in all_employment_info if info['sex'] == 'Male'
+        ]
+    )
 
     return render_template(
         "index.html",
@@ -68,7 +99,9 @@ def index():
         poland_width=poland_width,
         poland_height=poland_height,
         powiats_data=powiats_data,
-        wojewodztwa_wage_mean=wojewodztwa_wage_mean
+        wojewodztwa_wage_mean=wojewodztwa_wage_mean,
+        wojewodztwa_female_wage_mean=wojewodztwa_female_wage_mean,
+        wojewodztwa_male_wage_mean=wojewodztwa_male_wage_mean
     )
 
 

@@ -23,6 +23,8 @@
             data-name="{{ region['properties']['nazwa'] }}"
             data-type="{{ name }}"
             data-region_wage_mean="{{ wojewodztwa_wage_mean.get(unidecode(region['properties']['nazwa'])) }}"
+            data-female_wage_mean="{{ wojewodztwa_female_wage_mean.get(unidecode(region['properties']['nazwa'])) }}"
+            data-male_wage_mean="{{ wojewodztwa_male_wage_mean.get(unidecode(region['properties']['nazwa'])) }}"
             data-west_border="{{ region["west_border"] }}"
             data-north_border="{{ region["north_border"] }}"
             data-width="{{ region["width"] }}"
@@ -48,13 +50,13 @@
 
 {% endblock %}
 {% block content %}
-    <h1>Zarobki w pielęgniarstwie</h1>
     <div class="container">
         <div class="row">
             <div class="column-md-6">
                 <div>
                     <a href="#" class="zoom_out btn btn-primary btn-lg" onclick="zoom_out()" tabindex="-1" role="button">Zoom out</a>
                     <a href="#" class="btn btn-primary btn-lg" onclick="show_powiats()" tabindex="-1" role="button">Powiaty/Województwa</a>
+                    <a href="#" class="zoom_out btn btn-primary btn-lg" onclick="show_wages()" tabindex="-1" role="button">Pokaż zarobki</a>
                 </div>
                 <div>
                 <svg class="map"
@@ -102,10 +104,13 @@
                     {{ repeat_labels_on_top(powiaty, 'powiat') }}
                 </svg></div>
             </div>
-            <div class="column-md-6">
+            <div class="column-md-6 side_panel">
                 <h2 id="active_region"></h2>
                 <h3 id="active_region_type"></h3>
                 <div id="active_region_data"></div>
+                <div id="active_region_wages_data"></div>
+                <div id="active_region_female_wages_data"></div>
+                <div id="active_region_male_wages_data"></div>
             </div>
         </div>
     </div>
@@ -129,7 +134,6 @@
                 previous_pow = element;
             }
             element.classList.add('selected');
-
             let active_region = element.dataset.name;
             let active_region_type = element.dataset.type;
             console.log(active_region);
@@ -148,7 +152,7 @@
                 powiat = powiats[powiat_key];
                 console.log(powiat);
 
-                document.querySelector('#active_region_data').textContent = powiat["Województwo"];
+                document.querySelector('#active_region_data').textContent = `wojewodztwo ${powiat["Województwo"]}`;
             }
             
             const activated_region_type = element.dataset.type;
@@ -156,10 +160,14 @@
             if (activated_region_type == "powiat") {
                 map.classList.remove('wojewodztwo_selected');
                 map.classList.add('powiat_selected');
+                document.querySelector('#active_region_wages_data').textContent = '';
             }
             else if (activated_region_type == "wojewodztwo") {
                 map.classList.remove('powiat_selected');
                 map.classList.add('wojewodztwo_selected');
+                document.querySelector('#active_region_wages_data').textContent = `Średnia wynagrodzeń: ${parseFloat(element.dataset.region_wage_mean).toFixed(2)} PLN`;
+                document.querySelector('#active_region_female_wages_data').textContent = `Średnia wynagrodzeń kobiet: ${parseFloat(element.dataset.female_wage_mean).toFixed(2)} PLN`;
+                document.querySelector('#active_region_male_wages_data').textContent = `Średnia wynagrodzeń mężczyzn: ${parseFloat(element.dataset.male_wage_mean).toFixed(2)} PLN`;
             }
 
             // zoom in
@@ -241,6 +249,8 @@
             map.classList.toggle('show_powiats');
         }
 
+        
+        let wages_dispay = false;
         let wojewodztwa = document.querySelectorAll(".wojewodztwo");
         let i = 0;
         let wages_list = [];
@@ -251,15 +261,25 @@
         let wages_min = Math.min(...wages_list);
         let wages_max = Math.max(...wages_list);
         let wages_span = wages_max - wages_min;
-        console.log(wages_min, wages_max, wages_span);
+        
+        // show wages on the map
+        function show_wages() {
 
-        for (let wojewodztwo of wojewodztwa) {
-            let wages_mean = parseFloat(wojewodztwo.dataset.region_wage_mean)
-            let wages_perc = (wages_mean - wages_min) / wages_span * 100;
-            let redness = 255 - (255 * wages_perc / 100);
-            console.log(redness)
-            wojewodztwo.firstElementChild.style.fill = `rgb(${redness},0,0)`
-        };
-
+            if (wages_dispay == false) {
+                for (let wojewodztwo of wojewodztwa) {
+                    let wages_mean = parseFloat(wojewodztwo.dataset.region_wage_mean)
+                    let wages_perc = (wages_mean - wages_min) / wages_span * 100;
+                    let redness = 255 - (255 * wages_perc / 100);
+                    wojewodztwo.firstElementChild.style.fill = `rgb(${redness},0,0)`
+                };
+                wages_dispay = true;
+            }
+            else {
+                for (let wojewodztwo of wojewodztwa) {
+                    wojewodztwo.firstElementChild.style.fill = `rgb(203,203,255)`
+                };
+                wages_dispay = false;
+            }          
+        }
     </script>
 {% endblock %}
