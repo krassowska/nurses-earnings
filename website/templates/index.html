@@ -161,6 +161,8 @@
                 map.classList.remove('wojewodztwo_selected');
                 map.classList.add('powiat_selected');
                 document.querySelector('#active_region_wages_data').textContent = '';
+                document.querySelector('#active_region_female_wages_data').textContent = '';
+                document.querySelector('#active_region_male_wages_data').textContent = '';
             }
             else if (activated_region_type == "wojewodztwo") {
                 map.classList.remove('powiat_selected');
