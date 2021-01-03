@@ -52,3 +52,12 @@
 #select {
     margin: 0 0 15px 0;
 }
+
+.region text {
+    paint-order: stroke;
+    stroke: #fff9f9;
+    stroke-width: 1%;
+    /* stroke-linecap: butt; */
+    /* stroke-linejoin: miter; */
+    font-weight: 600;
+}
